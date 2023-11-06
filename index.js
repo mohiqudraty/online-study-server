@@ -24,6 +24,19 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    // collection here -----------------------------------------
+    const assignmentCollection = client
+      .db("studyOnlineDB")
+      .collection("assignments");
+
+    // all assignment -----------
+    app.get("/api/v1/all-assignment", async (req, res) => {
+      const cursor = assignmentCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
