@@ -30,9 +30,26 @@ async function run() {
       .db("studyOnlineDB")
       .collection("assignments");
 
+    const faqCollection = client.db("studyOnlineDB").collection("faqs");
+    const featureCollection = client.db("studyOnlineDB").collection("features");
+
     // all assignment -----------
     app.get("/api/v1/all-assignment", async (req, res) => {
       const cursor = assignmentCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // get features here ---------------
+    app.get("/api/v1/features", async (req, res) => {
+      const cursor = featureCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // faq get here ----------------
+    app.get("/api/v1/faq", async (req, res) => {
+      const cursor = faqCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
