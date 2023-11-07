@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
     // collection here -----------------------------------------
     const assignmentCollection = client
@@ -34,8 +34,12 @@ async function run() {
     const featureCollection = client.db("studyOnlineDB").collection("features");
 
     // create assignment api  ----------------
-
-    // all assignment -----------
+    app.post("/api/v1/all-assignment", async (req, res) => {
+      const assignment = req.body;
+      const result = await assignmentCollection.insertOne(assignment);
+      res.send(result);
+    });
+    // all assignment api -----------
     app.get("/api/v1/all-assignment", async (req, res) => {
       const cursor = assignmentCollection.find();
       const result = await cursor.toArray();
