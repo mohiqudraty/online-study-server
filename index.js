@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 require("dotenv").config();
 const app = express();
@@ -30,25 +30,76 @@ async function run() {
       .db("studyOnlineDB")
       .collection("assignments");
 
+    const submitttedCollection = client.db("studyOnlineDB").collection("faqs");
     const faqCollection = client.db("studyOnlineDB").collection("faqs");
     const featureCollection = client.db("studyOnlineDB").collection("features");
 
-    // create assignment api  ----------------
+    // create an assignment api  ----------------
     app.post("/api/v1/all-assignment", async (req, res) => {
-      const assignment = req.body;
-      const result = await assignmentCollection.insertOne(assignment);
-      res.send(result);
-    });
-    // all assignment api -----------
-    app.get("/api/v1/all-assignment", async (req, res) => {
-      const level = req.query.level;
-      let query = {};
-      if (level) {
-        query = { level: level };
+      try {
+        const assignment = req.body;
+        const result = await assignmentCollection.insertOne(assignment);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
       }
-      const cursor = assignmentCollection.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
+    });
+
+    // get  single assignment data for view and update page  ------------------
+    app.get("/api/v1/single-assignment/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        console.log(id);
+        const query = { _id: new ObjectId(id) };
+        const result = await assignmentCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    // get all assignment api -------------------
+    app.put("/api/v1/all-assignment/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const assignment = req.body;
+        const options = { upsert: true };
+        const updateAssignment = {
+          $set: {
+            title: assignment.title,
+            photo: assignment.photo,
+            description: assignment.description,
+            marks: assignment.marks,
+            level: assignment.level,
+            dueDate: assignment.dueDate,
+          },
+        };
+        const result = await assignmentCollection.updateOne(
+          filter,
+          updateAssignment,
+          options
+        );
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    // get all assignment api -------------------
+    app.get("/api/v1/all-assignment", async (req, res) => {
+      try {
+        const level = req.query.level;
+        let query = {};
+        if (level) {
+          query = { level: level };
+        }
+        const cursor = assignmentCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // get features here ---------------
