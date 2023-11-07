@@ -58,7 +58,7 @@ async function run() {
       }
     });
 
-    // get all assignment api -------------------
+    // update  assignment api -------------------
     app.put("/api/v1/all-assignment/:id", async (req, res) => {
       try {
         const id = req.params.id;
@@ -80,6 +80,17 @@ async function run() {
           updateAssignment,
           options
         );
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+    // delete  assignment api -------------------
+    app.delete("/api/v1/all-assignment/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const result = await assignmentCollection.deleteOne(filter);
         res.send(result);
       } catch (error) {
         console.log(error);
