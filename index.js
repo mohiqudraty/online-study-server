@@ -30,11 +30,36 @@ async function run() {
       .db("studyOnlineDB")
       .collection("assignments");
 
-    const submitttedCollection = client.db("studyOnlineDB").collection("faqs");
+    const submittedCollection = client
+      .db("studyOnlineDB")
+      .collection("submitted");
     const faqCollection = client.db("studyOnlineDB").collection("faqs");
     const featureCollection = client.db("studyOnlineDB").collection("features");
 
-    // create an assignment api  ----------------
+    // get  submitted  assignment api  ------------------
+    app.get("/api/v1/submit-assignment", async (req, res) => {
+      try {
+        const query = { statue: req.query.status };
+        const result = await submittedCollection.find(query).toArray();
+        res.send(result);
+        console.log(query);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    // submit an assignment api  ------------------
+    app.post("/api/v1/submit-assignment", async (req, res) => {
+      try {
+        const assignment = req.body;
+        const result = await submittedCollection.insertOne(assignment);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    // create an assignment api  ------------------
     app.post("/api/v1/all-assignment", async (req, res) => {
       try {
         const assignment = req.body;
