@@ -41,7 +41,12 @@ async function run() {
     });
     // all assignment api -----------
     app.get("/api/v1/all-assignment", async (req, res) => {
-      const cursor = assignmentCollection.find();
+      const level = req.query.level;
+      let query = {};
+      if (level) {
+        query = { level: level };
+      }
+      const cursor = assignmentCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
