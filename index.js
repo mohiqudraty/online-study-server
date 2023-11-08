@@ -2,12 +2,14 @@ const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173"],
@@ -25,6 +27,23 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+/// middleware----------------==-==-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-==
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  // console.log("token middle", token);
+  // if no token ---
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
 
 async function run() {
   try {
@@ -64,6 +83,7 @@ async function run() {
     // logout
     app.post("/logout", async (req, res) => {
       const user = req.body;
+      console.log("logout user", user);
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
@@ -82,8 +102,12 @@ async function run() {
     });
 
     // get  my  assignment api  ------------------
-    app.get("/api/v1/my-assignment", async (req, res) => {
+    app.get("/api/v1/my-assignment", verifyToken, async (req, res) => {
       try {
+        if (req.user.email !== req.query.email) {
+          return res.status(403).send({ message: "forbidden access" });
+        }
+        console.log(req.user.email);
         const email = req.query.email;
         const query = { email: email };
         const result = await submittedCollection.find(query).toArray();
