@@ -36,10 +36,64 @@ async function run() {
     const faqCollection = client.db("studyOnlineDB").collection("faqs");
     const featureCollection = client.db("studyOnlineDB").collection("features");
 
+    /// delete my assignment --------------------
+    app.delete("/api/v1/delete-assignment", async (req, res) => {
+      try {
+        const id = req.query.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await submittedCollection.deleteOne(query);
+        res.send(result);
+        console.log(query);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    // get  my  assignment api  ------------------
+    app.get("/api/v1/my-assignment", async (req, res) => {
+      try {
+        const email = req.query.email;
+        const query = { email: email };
+        const result = await submittedCollection.find(query).toArray();
+        res.send(result);
+        console.log(query);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    // update  submitted  assignment api  ------------------
+    app.put("/api/v1/submit-assignment/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const markAndStatus = req.body;
+        const options = { upsert: true };
+        const updateMarkAndStatus = {
+          $set: {
+            feedback: markAndStatus.feedback,
+            getMark: markAndStatus.getMark,
+            examiner: markAndStatus.examiner,
+            status: markAndStatus.status,
+          },
+        };
+
+        const result = await submittedCollection.updateOne(
+          filter,
+          updateMarkAndStatus,
+          options
+        );
+        res.send(result);
+        console.log(query);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
     // get  submitted  assignment api  ------------------
     app.get("/api/v1/submit-assignment", async (req, res) => {
       try {
-        const query = { statue: req.query.status };
+        const query = { status: req.query.status };
         const result = await submittedCollection.find(query).toArray();
         res.send(result);
         console.log(query);
