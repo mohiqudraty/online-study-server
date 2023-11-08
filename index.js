@@ -1,13 +1,19 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@assignment11.eiurimr.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -25,7 +31,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    // collection here -----------------------------------------
+    // start collection here =======================================
     const assignmentCollection = client
       .db("studyOnlineDB")
       .collection("assignments");
@@ -35,7 +41,33 @@ async function run() {
       .collection("submitted");
     const faqCollection = client.db("studyOnlineDB").collection("faqs");
     const featureCollection = client.db("studyOnlineDB").collection("features");
+    //end  collection  ==============================================
 
+    // ================================Verify area ===============================
+    // auth verify ---------------
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+        })
+        .send({ success: true });
+    });
+
+    // logout
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+    });
+
+    // ============================my assignment apis==============================
     /// delete my assignment --------------------
     app.delete("/api/v1/delete-assignment", async (req, res) => {
       try {
@@ -62,6 +94,7 @@ async function run() {
       }
     });
 
+    // ============================submitted assignment apis==============================
     // update  submitted  assignment api  ------------------
     app.put("/api/v1/submit-assignment/:id", async (req, res) => {
       try {
@@ -113,6 +146,7 @@ async function run() {
       }
     });
 
+    // ============================all assignment apis==============================
     // create an assignment api  ------------------
     app.post("/api/v1/all-assignment", async (req, res) => {
       try {
