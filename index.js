@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["https://coffee-store-front.web.app"],
     credentials: true,
   })
 );
@@ -29,26 +29,26 @@ const client = new MongoClient(uri, {
 });
 
 /// middleware----------------==-==-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-==
-const verifyToken = (req, res, next) => {
-  const token = req.cookies?.token;
-  // console.log("token middle", token);
-  // if no token ---
-  if (!token) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).send({ message: "unauthorized access" });
-    }
-    req.user = decoded;
-    next();
-  });
-};
+// const verifyToken = (req, res, next) => {
+//   const token = req.cookies?.token;
+//   // console.log("token middle", token);
+//   // if no token ---
+//   if (!token) {
+//     return res.status(401).send({ message: "unauthorized access" });
+//   }
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).send({ message: "unauthorized access" });
+//     }
+//     req.user = decoded;
+//     next();
+//   });
+// };
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     // start collection here =======================================
     const assignmentCollection = client
@@ -102,12 +102,12 @@ async function run() {
     });
 
     // get  my  assignment api  ------------------
-    app.get("/api/v1/my-assignment", verifyToken, async (req, res) => {
+    app.get("/api/v1/my-assignment", async (req, res) => {
       try {
-        if (req.user.email !== req.query.email) {
-          return res.status(403).send({ message: "forbidden access" });
-        }
-        console.log(req.user.email);
+        // if (req.user.email !== req.query.email) {
+        //   return res.status(403).send({ message: "forbidden access" });
+        // }
+        // console.log(req.user.email);
         const email = req.query.email;
         const query = { email: email };
         const result = await submittedCollection.find(query).toArray();
